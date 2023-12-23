@@ -1,7 +1,9 @@
-reate a file
-file { '/tmp/school':
-    mode    => '0744',
-    owner   => 'www-data',
-    group   => 'www-data',
-    content => 'I love Puppet',
+#manifest to create file in tmp directory
+file { '/tmp/holberton':
+  ensure  => file,
+  path    => '/tmp/holberton',
+  mode    => '0744',
+  owner   => 'www-data',
+  group   => 'www-data',
+  content => 'I love Puppet',
 }
