@@ -1,39 +1,17 @@
 #!/usr/bin/python3
-""" Export to CSV  """
+"""Script to export data in the CSV format"""
+import csv
+import requests as r
+import sys
 
 if __name__ == "__main__":
-    import csv
-    from requests import get
-    from sys import argv, exit
+    user_id = sys.argv[1]
+    url = "https://jsonplaceholder.typicode.com/"
+    usr = r.get(url + "users/{}".format(user_id)).json()
+    username = usr.get("username")
+    to_do = r.get(url + "todos", params={"userId": user_id}).json()
 
-    try:
-        id = argv[1]
-        is_int = int(id)
-
-    url_user = "https://jsonplaceholder.typicode.com/users?id=" + id
-    url_todo = "https://jsonplaceholder.typicode.com/todos?userId=" + id
-
-    r_user = get(url_user)
-    r_todo = get(url_todo)
-
-    try:
-        js_user = r_user.json()
-        js_todo = r_todo.json()
-
-    except ValueError:
-        print("Not a valid JSON")
-
-    if js_user and js_todo:
-        USER_ID = id
-        USERNAME = js_user[0].get('username')
-
-        with open(id + '.csv', 'w', newline='') as csvfile:
-            spamwriter = csv.writer(csvfile, delimiter=',',
-                                    quotechar='"', quoting=csv.QUOTE_ALL)
-            for todo in js_todo:
-                TASK_COMPLETED_STATUS = todo.get("completed")
-                TASK_TITLE = todo.get('title')
-                spamwriter.writerow([USER_ID,
-                                     USERNAME,
-                                     TASK_COMPLETED_STATUS,
-                                     TASK_TITLE])
+    with open("{}.csv".format(user_id), "w", newline="") as csvfile:
+        writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        [writer.writerow([user_id, username, elm.get("completed"),
+                          elm.get("title")]) for elm in to_do]
