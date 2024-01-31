@@ -1,46 +1,19 @@
 #!/usr/bin/python3
-""" Export to JSON  """
+"""Exports to-do list information for a given employee ID to JSON format."""
+import json
+import requests
+import sys
 
 if __name__ == "__main__":
-    import json
-    from requests import get
-    from sys import argv, exit
+    user_id = sys.argv[1]
+    url = "https://jsonplaceholder.typicode.com/"
+    user = requests.get(url + "users/{}".format(user_id)).json()
+    username = user.get("username")
+    todos = requests.get(url + "todos", params={"userId": user_id}).json()
 
-    try:
-        id = argv[1]
-        is_int = int(id)
-    except:
-        exit()
-
-    url_user = "https://jsonplaceholder.typicode.com/users?id=" + id
-    url_todo = "https://jsonplaceholder.typicode.com/todos?userId=" + id
-
-    r_user = get(url_user)
-    r_todo = get(url_todo)
-
-    try:
-        js_user = r_user.json()
-        js_todo = r_todo.json()
-
-    except ValueError:
-        print("Not a valid JSON")
-
-    if js_user and js_todo:
-        USER_ID = id
-        USERNAME = js_user[0].get('username')
-
-        js_list = []
-        for todo in js_todo:
-            TASK_COMPLETED_STATUS = todo.get("completed")
-            TASK_TITLE = todo.get('title')
-
-            dic = {"task": TASK_TITLE,
-                   "completed": TASK_COMPLETED_STATUS,
-                   "username": USERNAME}
-
-            js_list.append(dic)
-
-        data = {USER_ID: js_list}
-
-        with open(id + '.json', 'w', newline='') as jsonfile:
-            json.dump(data, jsonfile)
+    with open("{}.json".format(user_id), "w") as jsonfile:
+        json.dump({user_id: [{
+                "task": t.get("title"),
+                "completed": t.get("completed"),
+                "username": username
+            } for t in todos]}, jsonfile)
